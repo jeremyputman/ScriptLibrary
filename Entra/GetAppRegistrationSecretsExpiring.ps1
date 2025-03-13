@@ -9,7 +9,7 @@ Get-GraphAccessToken -clientID $AzAppRegistration -clientSecret $clientSecret.Ge
 $today = Get-Date
 $30Days = $today.AddDays(30)
 # Get list of Application Registrations that have credentials
-$applications = Get-GraphApplications -all -fields "id,appId,displayName,keyCredentials,passwordCredentials" | Where-Object {$null -ne $_.keyCredentials[0] -or $null -ne $_.passwordCredentials[0]}
+$applications = Get-GraphApplications -all -fields "id,appId,displayName,keyCredentials,passwordCredentials,notes" | Where-Object {$null -ne $_.keyCredentials[0] -or $null -ne $_.passwordCredentials[0]}
 # Create a list of Service Principals that are expiring in 30 days
 $expiringSecrets = [System.Collections.Generic.List[PSCustomObject]]@()
 # Loop through all the principals to check for expiring ones within our time frame
@@ -21,6 +21,7 @@ foreach($app in $applications){
       $message = "Certificate has Expired"
     }
     elseif($key.endDateTime -lt $30Days){
+      if($key.displayName -eq "CN=service.prod.powerva.microsoft.com"){continue}
       $message = "Certificate will expire in 30 days or less"
     }  
     # Store the expiring secrets in a list
@@ -42,6 +43,7 @@ foreach($app in $applications){
       $message = "Secret has Expired"
     }
     elseif($key.endDateTime -lt $30Days){
+      if($app.notes -eq "AppProxyAppReg"){continue}
       $message = "Secret will expire in 30 days or less"
     }  
     # Store the expiring secrets in a list
